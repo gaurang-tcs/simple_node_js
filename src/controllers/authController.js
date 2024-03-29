@@ -4,17 +4,16 @@ const db = require('../db');
 
 const registerUser = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, address } = req.body;
 
         const [alreadyRegUser] = await db.execute("SELECT * FROM user WHERE email = ?", [email])
-        console.log("Already user----->",alreadyRegUser)
 
-        if(alreadyRegUser.length !== 0){
-            return res.status(400).json({message: 'User already registered!'})
+        if (alreadyRegUser.length !== 0) {
+            return res.status(400).json({ message: 'User already registered!' })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        await db.execute('INSERT INTO user (username, email, password) VALUES (?, ?, ?)', [username, email, hashedPassword]);
+        await db.execute('INSERT INTO user (username, email, password, address) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, address]);
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
@@ -38,7 +37,7 @@ const loginUser = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign({ userId: userData[0].id }, 'secretKey', { expiresIn: '1h' });
-
+        await db.execute('UPDATE user SET token = ? WHERE id = ?', [token, userData[0].id]);
         res.status(200).json({ token });
     } catch (error) {
         console.error('Error logging in:', error);
