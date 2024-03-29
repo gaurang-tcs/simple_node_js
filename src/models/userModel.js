@@ -1,7 +1,7 @@
 // models/userModel.js
 const db = require('../db');
 
-async function getAllUsers() {
+async function getUsers() {
   const [rows] = await db.execute('SELECT id, username, email, address FROM user');
   return rows;
 }
@@ -36,7 +36,7 @@ const deleteExisitingUser = async (userId) => {
 }
 
 module.exports = {
-  getAllUsers,
+  getUsers,
   addNewUser,
   updateExisitingUser,
   deleteExisitingUser

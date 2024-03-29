@@ -2,7 +2,7 @@ const userModel = require('../models/userModel');
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.getAllUsers();
+    const users = await userModel.getUsers();
     res.json(users)
   } catch (error) {
     console.error('Error fetching users:', error);
