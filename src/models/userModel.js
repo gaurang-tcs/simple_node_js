@@ -2,7 +2,7 @@
 const db = require('../db');
 
 async function getAllUsers() {
-  const [rows] = await db.execute('SELECT * FROM user');
+  const [rows] = await db.execute('SELECT id, username, email, address FROM user');
   return rows;
 }
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const userRoutes = require('./src/routes/userRoutes');
+const authRoutes = require('./src/routes/authRoutes');
 const dotenv = require('dotenv');
 const mysql = require('mysql2/promise');
 
@@ -10,7 +11,9 @@ const app = express();
 const port =  3001;
 
 app.use(bodyParser.json());
+
 app.use('/users', userRoutes);
+app.use('/', authRoutes);
 
 async function startServer() {
   try {
