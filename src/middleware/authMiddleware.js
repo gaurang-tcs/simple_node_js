@@ -1,8 +1,8 @@
-// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const db = require('../db');
+const  User  = require('../models/userModal'); // Assuming you have imported the User model from Sequelize
 const moment = require('moment');
 const { decryptToken } = require('../utils/common');
+const Tokens = require('../models/tokenModal');
 
 const verifyToken = async (req, res, next) => {
     const token = req.headers.authorization;
@@ -12,19 +12,27 @@ const verifyToken = async (req, res, next) => {
 
     jwt.verify(token, 'secretKey', async (err, decoded) => {
         if (err) {
-            const tokenError = (err?.expiredAt < moment(new Date())) ? "Token Expired!" : "Invalid Token"
+            const tokenError = (err?.expiredAt < moment(new Date())) ? 'Token Expired!' : 'Invalid Token';
             return res.status(401).json({ message: tokenError, status: 401 });
         }
 
-        const [user] = await db.execute("SELECT token FROM user WHERE id = ?", [decoded.userId])
-        const decryptedToken = decryptToken(user[0].token)
-        req.userId = decoded.userId;
-        req.token = token;
-        if (user?.length && (user[0]?.token && user[0]?.token !== 'NULL' && user[0]?.token !== '') && decryptedToken === token) {
+        try {
+            const userToken = await Tokens.findByPk(decoded.userId);
+            if (!userToken || !userToken.token) {
+                return res.status(401).json({ message: 'Unauthorized', status: 401 });
+            }
+
+            const decryptedToken = decryptToken(userToken.token);
+            if (decryptedToken !== token) {
+                return res.status(401).json({ message: 'Unauthorized', status: 401 });
+            }
+
+            req.userId = decoded.userId;
+            req.token = token;
             next();
-        }
-        else {
-            return res.status(401).json({ message: 'Unauthorized', status: 401 });
+        } catch (error) {
+            console.error('Error verifying token:', error);
+            res.status(500).json({ message: 'Internal Server Error', status: 500 });
         }
     });
 };
